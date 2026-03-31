@@ -1,55 +1,264 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clasificación de Contenidos Didácticos Digitales</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: url('https://media.giphy.com/media/QNFhOolVeCzPQ2Mx85/giphy.gif') no-repeat center center fixed;
-            background-size: cover;
-            color: #fff;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .category { margin-bottom: 20px; }
-        h1, h2 { color: #ffcc00; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin: 5px 0; }
-        a { color: #00c3ff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-    </style>
+<meta charset="UTF-8">
+<title>Detective Digital PRO</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: black;
+  color: white;
+  text-align: center;
+  overflow: hidden;
+  cursor: none;
+}
+
+/* Canvas fondo */
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+/* Cursor trail */
+.trail {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  background: cyan;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Título LED */
+h1 {
+  font-size: 3rem;
+  margin-top: 20px;
+  animation: led 2s infinite alternate;
+}
+
+@keyframes led {
+  0% {color: #00ffff;}
+  50% {color: #ff00ff;}
+  100% {color: #00ff00;}
+}
+
+.sub {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-top: -10px;
+}
+
+/* Contenedor */
+.container {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 20px;
+  width: 85%;
+  max-width: 650px;
+  margin: auto;
+  box-shadow: 0 0 30px rgba(0,255,255,0.3);
+}
+
+/* Inputs */
+textarea, input {
+  width: 90%;
+  margin: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+}
+
+/* Botón */
+button {
+  padding: 12px 25px;
+  border-radius: 15px;
+  border: none;
+  background: cyan;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.1);
+}
+
+/* Resultado */
+#resultado {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 15px;
+  display: none;
+  text-align: left;
+}
+
+.verde { background: #28a745; }
+.amarillo { background: #ffc107; color: black; }
+.rojo { background: #dc3545; }
+
+/* Iconos flotantes */
+.iconos {
+  font-size: 2rem;
+  animation: flotar 3s infinite alternate;
+}
+
+@keyframes flotar {
+  from {transform: translateY(0);}
+  to {transform: translateY(-12px);}
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Clasificación de Contenidos Didácticos Digitales</h1>
-        <h1>Por Abraham Esaú Arévalo Morales</h1>
-        <div class="category">
-            <h2>1. Contenidos Audiovisuales</h2>
-            <ul>
-                <li><a href="https://drive.google.com/file/d/1AsPIoj7R2GvyeWlX4I90Qdg_J3pGGbEN/view?usp=drive_link" target="_blank">Ejemplo: Video Educativo</a></li>
-            </ul>
-        </div>
-        
-        <div class="category">
-            <h2>2. Contenidos Interactivos</h2>
-            <ul>
-                <li><a href="https://play.tomi.digital/app/learn?id=610212&type=lesson&utm_source=tomi-digital&utm_medium=organic&utm_campaign=lesson-shared" target="_blank">Ejemplo: Plataforma Tomi.Digital</a></li>
-            </ul>
-        </div>
-        
-        <div class="category">
-            <h2>3. Documentos de Lectura</h2>
-            <ul>
-                <li><a href="https://www.galileo.edu/facultad-de-administracion/historias-de-exito/future-of-jobs-produccion-de-contenido/" target="_blank">Ejemplo: Artículo Web de lectura</a></li>
-            </ul>
-        </div>
-    </div>
+
+<canvas id="fondo"></canvas>
+
+<h1>🕵️ DETECTIVE DIGITAL</h1>
+<div class="sub">Por Abraham Esaú Arévalo Morales</div>
+
+<div class="iconos">📱 💻 🌐 ⚠️ 🔍 🚨</div>
+
+<p>Analiza contenido digital y descubre si es confiable</p>
+
+<div class="container">
+
+<p><b>Instrucciones:</b> Ingresa texto, enlace o imagen para analizar.</p>
+
+<textarea id="texto" placeholder="Pega texto aquí..."></textarea>
+<input type="text" id="link" placeholder="Pega un enlace">
+<input type="file" id="imagen">
+
+<br>
+<button onclick="analizar()">Analizar con IA</button>
+
+<div id="resultado"></div>
+
+</div>
+
+<script>
+// 🎨 Fondo partículas
+const canvas = document.getElementById("fondo");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particles = [];
+for (let i = 0; i < 80; i++) {
+  particles.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 2
+  });
+}
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = "cyan";
+    ctx.fill();
+    p.y += 0.4;
+    if (p.y > canvas.height) p.y = 0;
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+// 🖱️ Cursor trail real
+document.addEventListener("mousemove", e => {
+  let dot = document.createElement("div");
+  dot.className = "trail";
+  dot.style.left = e.pageX + "px";
+  dot.style.top = e.pageY + "px";
+  document.body.appendChild(dot);
+
+  setTimeout(() => dot.remove(), 300);
+});
+
+// 🔊 Voz
+function hablar(texto) {
+  let msg = new SpeechSynthesisUtterance(texto);
+  msg.lang = "es-ES";
+  speechSynthesis.speak(msg);
+}
+
+// 🤖 Análisis IA + fallback
+async function analizar() {
+  let texto = document.getElementById("texto").value;
+  let resultado = document.getElementById("resultado");
+
+  if (!texto) {
+    alert("Escribe algo primero");
+    return;
+  }
+
+  resultado.style.display = "block";
+  resultado.innerHTML = "🤖 Analizando...";
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer TU_API_KEY_AQUI"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{
+          role: "user",
+          content: `Analiza este contenido y responde en formato claro:
+          - Nivel: confiable/dudoso/falso
+          - Explicación
+          - Riesgos
+          - Consejos
+          - Fuentes confiables
+
+          Texto: ${texto}`
+        }]
+      })
+    });
+
+    let data = await res.json();
+    let respuesta = data.choices[0].message.content;
+
+    resultado.innerHTML = respuesta;
+    resultado.className = "verde";
+
+    hablar("Análisis completado");
+
+  } catch (e) {
+    // 🔥 MODO DEMO INTELIGENTE
+    let razones = [];
+
+    if (texto.includes("urgente")) razones.push("Lenguaje alarmista");
+    if (texto.includes("comparte")) razones.push("Invita a compartir sin verificar");
+    if (texto.length < 40) razones.push("Muy poco contenido");
+
+    let nivel = razones.length;
+
+    if (nivel === 0) {
+      resultado.className = "verde";
+      resultado.innerHTML = "✅ Parece confiable<br>✔ Verifica siempre fuentes.";
+    } else if (nivel === 1) {
+      resultado.className = "amarillo";
+      resultado.innerHTML = "⚠️ Dudoso<br>" + razones.join(", ");
+    } else {
+      resultado.className = "rojo";
+      resultado.innerHTML = "🚨 Posible fake<br>" + razones.join(", ");
+    }
+
+    hablar("Análisis en modo demostración");
+  }
+}
+</script>
+
 </body>
 </html>
